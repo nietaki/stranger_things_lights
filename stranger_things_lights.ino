@@ -20,18 +20,51 @@ byte letterPositions[ASCII_RANGE];
 #define MIN_BLINK_LAG 0
 #define MAX_BLINK_LAG 700
 
-#define MIN_BLINK_PERIOD 400
-#define MAX_BLINK_PERIOD 1500
+#define MIN_BLINK_PERIOD 300
+#define MAX_BLINK_PERIOD 1200
 
 #define BLINK_DURATION 3000
+#define BLINK_STRENGTH_MULTIPLIER 0.7
 
 unsigned int blinkLag[ASCII_RANGE];
 unsigned int blinkPeriod[ASCII_RANGE];
 
+// https://www.arduino.cc/reference/tr/language/variables/utilities/progmem/
+#include <avr/pgmspace.h>
+
+char messageBuffer[280];
+
+/* const char m0[] PROGMEM = "abcdefghijklmnopqrstuvwxyz"; */
+const char m0[] PROGMEM = "Run. Run now.";
+const char m1[] PROGMEM = "Happy new year!";
+const char m2[] PROGMEM = "Never gonna give you up Never gonna let you down Never gonna run around and desert you Never gonna make you cry Never gonna say goodbye Never gonna tell a lie and hurt you ";
+const char m3[] PROGMEM = "I like it when the red water comes out ";
+const char m4[] PROGMEM = "Can you feel us getting closer ";
+const char m5[] PROGMEM = "I am scared. It is so dark in here ";
+const char m6[] PROGMEM = "Do you like the taste of poison in your drink?";
+const char m7[] PROGMEM = "Wake up! You've been in a coma for the past five years! Please! We miss you! Wake up now!";
+const char m8[] PROGMEM = "No, please, no. Im not ready. Please stop. Please.";
+const char m9[] PROGMEM = "Litwo, ojczyzno moja! Ty jestes jak zdrowie; Ile cie trzeba cenic ten tylko sie dowie kto cie stracil. Dzis pieknosc twa w calej ozdobie widze i opisuje bo tesknie po tobie.";
+
+const char* const messages[] PROGMEM = {
+  m0,
+  m1,
+  m2,
+  m3,
+  m4,
+  m5,
+  m6,
+  m7,
+  m8,
+  m9
+};
+
+#define MESSAGE_COUNT 10
+
 void setup() { 
   randomSeed(analogRead(A0));
   seedBlinking();
-  letterColours[' '] = CRGB::Brown; // debugging, TODO change to Black
+  letterColours[' '] = CRGB::Black; // For debugging change to something else
   letterColours['A'] = CRGB::LightGoldenrodYellow;
   letterColours['B'] = CRGB::Blue;
   letterColours['C'] = CRGB::Purple;
@@ -60,32 +93,37 @@ void setup() {
   letterColours['Z'] = CRGB::Red;
 
   letterPositions[' '] = 2; //should not collide with any other we care about
-  letterPositions['A'] = 13;
-  letterPositions['B'] = 14;
-  letterPositions['C'] = 15;
-  letterPositions['D'] = 16;
-  letterPositions['E'] = 17;
-  letterPositions['F'] = 18;
-  letterPositions['G'] = 19;
-  letterPositions['H'] = 20;
-  letterPositions['I'] = 21;
-  letterPositions['J'] = 22;
-  letterPositions['K'] = 23;
-  letterPositions['L'] = 24;
-  letterPositions['M'] = 25;
-  letterPositions['N'] = 26;
-  letterPositions['O'] = 27;
-  letterPositions['P'] = 28;
-  letterPositions['Q'] = 29;
-  letterPositions['R'] = 30;
-  letterPositions['S'] = 31;
-  letterPositions['T'] = 32;
-  letterPositions['U'] = 33;
-  letterPositions['V'] = 34;
-  letterPositions['W'] = 35;
-  letterPositions['X'] = 36;
-  letterPositions['Y'] = 37;
-  letterPositions['Z'] = 38;
+  // TOP ROW
+  letterPositions['A'] = 114;
+  letterPositions['B'] = 119;
+  letterPositions['C'] = 124;
+  letterPositions['D'] = 129;
+  letterPositions['E'] = 134;
+  letterPositions['F'] = 139;
+  letterPositions['G'] = 143;
+  letterPositions['H'] = 149;
+
+  // MID ROW
+  letterPositions['I'] = 94;
+  letterPositions['J'] = 88;
+  letterPositions['K'] = 84;
+  letterPositions['L'] = 80;
+  letterPositions['M'] = 75;
+  letterPositions['N'] = 71;
+  letterPositions['O'] = 67;
+  letterPositions['P'] = 63;
+  letterPositions['Q'] = 57;
+
+  // BOTTOM ROW 
+  letterPositions['R'] = 5;
+  letterPositions['S'] = 9;
+  letterPositions['T'] = 13;
+  letterPositions['U'] = 17;
+  letterPositions['V'] = 21;
+  letterPositions['W'] = 25;
+  letterPositions['X'] = 29;
+  letterPositions['Y'] = 33;
+  letterPositions['Z'] = 39;
   delay(500);
   FastLED.addLeds<WS2813, DATA_PIN, GRB>(leds, NUM_LEDS);
 }
@@ -108,8 +146,11 @@ void loop() {
   /* FastLED.show(); */
   /* delay(10); */
 
-  showMessage("abcde");
+  char* message = getRandomMessage();
+  showMessage(message);
+  delay(100);
   blink(BLINK_DURATION);
+  delay(100);
 }
 
 fract8 toFract(float amount) {
@@ -146,6 +187,17 @@ char normalizeLetter(char letter) {
   }
 
   return ' ';
+}
+
+char* getRandomMessage() {
+  int idx = random(MESSAGE_COUNT);
+  strcpy_P(messageBuffer, (char *)pgm_read_word(&(messages[idx])));
+  return messageBuffer;
+}
+
+void clearLetters() {
+  fill_solid(leds, NUM_LEDS, CRGB::Black);
+  FastLED.show();
 }
 
 void showMessage(char* message) {
@@ -198,6 +250,7 @@ void blink(unsigned long blink_duration) {
     FastLED.show();
     delay(1);
   }
+  clearLetters();
 }
 
 float blinkCurve(unsigned long time, unsigned long lag, unsigned long period) {
@@ -207,7 +260,7 @@ float blinkCurve(unsigned long time, unsigned long lag, unsigned long period) {
   time = time - lag;
 
   float amount = sin(2.0 * PI * time / (1.0 * period));
-  return max(0.0, amount);
+  return max(0.0, amount) * BLINK_STRENGTH_MULTIPLIER;
 }
 
 void seedBlinking() {
