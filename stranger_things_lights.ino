@@ -9,7 +9,8 @@
 #define TIME_MULT 0.001 * 2 * PI * 0.6
 #define ASCII_RANGE 128
 
-#define LETTER_DURATION 600
+#define LETTER_DURATION 650
+#define AFTER_MESSAGE_PAUSE_DURATION 800
 
 // Define the array of leds
 CRGB leds[NUM_LEDS];
@@ -45,6 +46,25 @@ const char m6[] PROGMEM = "Do you like the taste of poison in your drink?";
 const char m7[] PROGMEM = "Wake up! You've been in a coma for the past five years! Please! We miss you! Wake up now!";
 const char m8[] PROGMEM = "No, please, no. Im not ready. Please stop. Please.";
 const char m9[] PROGMEM = "Litwo, ojczyzno moja! Ty jestes jak zdrowie; Ile cie trzeba cenic ten tylko sie dowie kto cie stracil. Dzis pieknosc twa w calej ozdobie widze i opisuje bo tesknie po tobie.";
+const char m10[] PROGMEM = "Consume. Obey. Stay asleep. Work. Reproduce. Watch Television. Conform. Buy. Obey.";
+const char m11[] PROGMEM = "Oto herezja tych czasow rozumu albo cos podobnego. Widze i zgadzam sie co sluszne ale robie to co niesluszne.";
+const char m12[] PROGMEM = "Whatever you do, dont fall asleep.";
+const char m13[] PROGMEM = "I can smell your fear. Tasty, tasty, beautiful fear.";
+const char m14[] PROGMEM = "WeRe going to get you. WeRe going to get you. Not another peep. Time to go to sleep.";
+const char m15[] PROGMEM = "We all go a little mad sometimes.";
+const char m16[] PROGMEM = "Monsters are real, ghosts are real too. They live inside us and sometimes they win.";
+const char m17[] PROGMEM = "Walls have ears. Doors have eyes. Trees have voices. Beasts tell lies. Beware the rain. Beware the snow. Beware the man You think you know.";
+const char m18[] PROGMEM = "The world outside has its own rules and those rules are not human.";
+const char m19[] PROGMEM = "That cold aint the weather. Thats death approaching.";
+const char m20[] PROGMEM = "I don't live in darkness. Darkness lives in me.";
+const char m21[] PROGMEM = "People die. Beauty fades. Love changes. And you will always be alone.";
+const char m22[] PROGMEM = "If you are reading this, then you are blissfully unaware what is creeping up behind you.";
+const char m23[] PROGMEM = "I'm every nightmare you've ever had. I am your worst dream come true. I am everything you ever were afraid of!";
+/* const char m20[] PROGMEM = "It is a mistake to fancy that horror is associated inextricably with darkness, silence, and solitude."; */
+/* const char m20[] PROGMEM = ""; */
+/* const char m20[] PROGMEM = ""; */
+/* const char m20[] PROGMEM = ""; */
+/* const char m20[] PROGMEM = ""; */
 
 const char* const messages[] PROGMEM = {
   m0,
@@ -56,10 +76,24 @@ const char* const messages[] PROGMEM = {
   m6,
   m7,
   m8,
-  m9
+  m9,
+  m10,
+  m11,
+  m12,
+  m13,
+  m14,
+  m15,
+  m16,
+  m17,
+  m18,
+  m19,
+  m20,
+  m21,
+  m22,
+  m23
 };
 
-#define MESSAGE_COUNT 10
+#define MESSAGE_COUNT 24
 
 void setup() { 
   randomSeed(analogRead(A0));
@@ -129,26 +163,9 @@ void setup() {
 }
 
 void loop() { 
-  /* fract8 amount = toFract((1.0 + sin(TIME_MULT * millis())) / 2.0); */
-  /* CRGB colour = dim(CRGB::Red, amount); */
-  /* leds[1] = colour; */
-
-  /* setLetterBrightness('a', 0.5); */
-  /* setLetterBrightness('B', 1.0); */
-  /* setLetterBrightness('C', 1.0); */
-  /* setLetterBrightness('D', 1.0); */
-  /* setLetterBrightness('E', 1.0); */
-  /* setLetterBrightness('F', 1.0); */
-  /* setLetterBrightness('G', 1.0); */
-  /* setLetterBrightness('H', 1.0); */
-  /* setLetterBrightness('I', 1.0); */
-
-  /* FastLED.show(); */
-  /* delay(10); */
-
   char* message = getRandomMessage();
   showMessage(message);
-  delay(100);
+  delay(AFTER_MESSAGE_PAUSE_DURATION);
   blink(BLINK_DURATION);
   delay(100);
 }
